@@ -1,0 +1,7 @@
+config BR2_PACKAGE_MACKEREL_PLUGIN_PROMETHEUS_EXPORTER
+	bool "mackerel-plugin-prometheus-exporter"
+	depends on BR2_PACKAGE_HOST_GO_TARGET_ARCH_SUPPORTS
+	help
+	  Mackerel Plugin Prometheus Exporter
+
+	  https://github.com/k1LoW/mackerel-plugin-prometheus-exporter

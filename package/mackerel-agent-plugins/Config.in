@@ -1,0 +1,7 @@
+config BR2_PACKAGE_MACKEREL_AGENT_PLUGINS
+	bool "mackerel-agent-plugins"
+	depends on BR2_PACKAGE_HOST_GO_TARGET_ARCH_SUPPORTS
+	help
+	  Mackerel Agent Plugins
+
+	  https://github.com/mackerelio/mackerel-agent-plugins

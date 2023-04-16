@@ -1,0 +1,18 @@
+config BR2_PACKAGE_MACKEREL_AGENT
+	bool "mackerel-agent"
+	depends on BR2_PACKAGE_HOST_GO_TARGET_ARCH_SUPPORTS
+	select BR2_PACKAGE_CA_CERTIFICATES
+	help
+	  Mackerel Agent
+
+	  https://github.com/mackerelio/mackerel-agent
+
+if BR2_PACKAGE_MACKEREL_AGENT
+
+config BR2_PACKAGE_MACKEREL_AGENT_APIKEY
+	string "mackerel-agent apikey"
+	default ""
+	help
+	  apikey for Mackerel Agent
+
+endif

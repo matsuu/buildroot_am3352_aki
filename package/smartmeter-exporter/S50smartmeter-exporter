@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# Starts smartmeter-exporter.
+#
+
+# Allow a few customizations from a config file
+test -r /etc/default/smartmeter-exporter && . /etc/default/smartmeter-exporter
+
+start() {
+	printf "Starting smartmeter-exporter: "
+	umask 077
+
+	start-stop-daemon -S -q -b -p /var/run/smartmeter-exporter.pid \
+		--exec /usr/bin/smartmeter-exporter -- $SMARTMETER_EXPORTER_ARGS
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+}
+stop() {
+	printf "Stopping smartmeter-exporter: "
+	start-stop-daemon -K -q -p /var/run/smartmeter-exporter.pid
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+}
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+  start)
+  	start
+	;;
+  stop)
+  	stop
+	;;
+  restart|reload)
+  	restart
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?

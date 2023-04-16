@@ -1,0 +1,41 @@
+config BR2_PACKAGE_SMARTMETER_EXPORTER
+	bool "smartmeter-exporter"
+	depends on BR2_PACKAGE_HOST_GO_TARGET_ARCH_SUPPORTS
+	help
+	  smartmeter-exporter
+
+	  https://github.com/mackerelio/mackerel-agent-plugins
+
+if BR2_PACKAGE_SMARTMETER_EXPORTER
+
+config BR2_PACKAGE_SMARTMETER_EXPORTER_BROUTEID
+	string "smartmeger-exporter brouteid"
+	default "1234567890ABCDEF1234567890ABCDEF"
+	help
+	  brouteid for smartmeter-exporter
+
+config BR2_PACKAGE_SMARTMETER_EXPORTER_BROUTEPW
+	string "smartmeger-exporter broutepw"
+	default "ABCDEFGHIJKL"
+	help
+	  broutepw for smartmeter-exporter
+
+config BR2_PACKAGE_SMARTMETER_EXPORTER_EXPORTER_PORT
+	string "smartmeger-exporter exporter port"
+	default "8080"
+	help
+	  exporter port for smartmeter-exporter
+
+config BR2_PACKAGE_SMARTMETER_EXPORTER_INTERVAL
+	string "smartmeger-exporter interval"
+	default "1m0s"
+	help
+	  interval for smartmeter-exporter
+
+config BR2_PACKAGE_SMARTMETER_EXPORTER_SERIAL_PORT
+	string "smartmeger-exporter serial port"
+	default "/dev/ttyS1"
+	help
+	  serial port for smartmeter-exporter
+
+endif

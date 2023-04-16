@@ -1,0 +1,100 @@
+#!/bin/sh
+
+NAME=mackerel-agent                  # Introduce the short server's name here
+
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DAEMON=${DAEMON:="/usr/bin/$NAME"}
+SCRIPTNAME=/etc/init.d/S50$NAME
+LOGFILE=${LOGILE:="/var/log/$NAME.log"}
+PIDFILE=${PIDFILE:="/var/run/$NAME.pid"}
+ROOT=${ROOT:="/var/lib/$NAME"}
+MACKEREL_PLUGIN_WORKDIR=${MACKEREL_PLUGIN_WORKDIR:="/var/tmp/$NAME"}
+
+if [ "$HTTP_PROXY" != "" ]; then
+    export HTTP_PROXY=$HTTP_PROXY
+fi
+if [ "$HTTPS_PROXY" != "" ]; then
+    export HTTPS_PROXY=$HTTPS_PROXY
+fi
+
+# Exit if the package is not installed
+[ -x $DAEMON ] || exit 0
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+    # Set large number of file descriptors for the safety sake
+    ulimit -n 65536 1>/dev/null 2>&1 || true
+    mkdir -m 777 -p $MACKEREL_PLUGIN_WORKDIR
+    MACKEREL_PLUGIN_WORKDIR=$MACKEREL_PLUGIN_WORKDIR $DAEMON supervise ${APIBASE:+--apibase=$APIBASE} ${APIKEY:+--apikey=$APIKEY} --pidfile=$PIDFILE --root=$ROOT $OTHER_OPTS >>$LOGFILE 2>&1 &
+    sleep 3
+    kill -0 $(cat $PIDFILE 2>/dev/null) >/dev/null 2>&1
+    return $?
+}
+
+do_configtest()
+{
+    $DAEMON configtest ${APIBASE:+--apibase=$APIBASE} ${APIKEY:+--apikey=$APIKEY} --pidfile=$PIDFILE --root=$ROOT $OTHER_OPTS >>$LOGFILE 2>&1
+    return $?
+}
+
+do_retire()
+{
+    $DAEMON retire -force ${APIBASE:+--apibase=$APIBASE} ${APIKEY:+--apikey=$APIKEY} --root=$ROOT $OTHER_OPTS >>$LOGFILE 2>&1
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+    start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --exec $DAEMON
+    RETVAL="$?"
+    [ "$RETVAL" = 2 ] && return 2
+    start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
+    [ "$?" = 2 ] && return 2
+    # Many daemons don't delete their pidfiles when they exit.
+    rm -f $PIDFILE
+    return "$RETVAL"
+}
+
+case "$1" in
+    start)
+        do_start
+        retval=$?
+        exit $retval
+        ;;
+    stop)
+        do_stop
+        retval=$?
+        if [ "$AUTO_RETIREMENT" != "" ] && [ "$AUTO_RETIREMENT" != "0" ]; then
+          do_retire || retval=$?
+        fi
+        exit $retval
+        ;;
+    reload|force-reload)
+        do_configtest || exit $?
+        start-stop-daemon --stop --signal HUP --quiet --pidfile $PIDFILE --exec $DAEMON
+        retval=$?
+        exit $retval
+        ;;
+    restart)
+        do_stop
+        do_start
+        retval=$?
+        exit $retval
+        ;;
+    configtest)
+        do_configtest
+        retval=$?
+        exit $retval
+        ;;
+    *)
+        echo "Usage: $SCRIPTNAME {start|stop|restart|reload|configtest}" >&2
+        exit 3
+    ;;
+esac
